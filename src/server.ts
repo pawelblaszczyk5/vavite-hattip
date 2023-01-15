@@ -1,6 +1,9 @@
 import { createMiddleware, createServer } from "@hattip/adapter-node";
 import { HattipHandler } from "@hattip/core";
+import { Server } from "http";
 import httpDevServer from "vavite/http-dev-server";
+import viteDevServer from "vavite/vite-dev-server";
+import { WebSocketServer } from "ws";
 
 const handler: HattipHandler = (context) => {
   const { pathname } = new URL(context.request.url);
@@ -15,12 +18,24 @@ const handler: HattipHandler = (context) => {
   }
 };
 
+const createWsHandler = (server: Server) => {
+  const ws = new WebSocketServer({ server });
+
+  ws.on("connection", (socket) => {
+    socket.on("message", (data) => {
+      console.log(data.toString());
+    });
+  });
+};
+
 if (httpDevServer) {
   console.log("DEV SERVER");
   httpDevServer.on("request", createMiddleware(handler));
+  createWsHandler(viteDevServer?.httpServer!);
 } else {
   console.log("PROD SERVER");
-  createServer(handler).listen(3000, "localhost", () => {
+  const server = createServer(handler).listen(3000, "localhost", () => {
     console.log("Server listening on http://localhost:3000");
   });
+  createWsHandler(server);
 }
