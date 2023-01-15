@@ -1,5 +1,6 @@
-import { createMiddleware } from "@hattip/adapter-node";
+import { createMiddleware, createServer } from "@hattip/adapter-node";
 import { HattipHandler } from "@hattip/core";
+import httpDevServer from "vavite/http-dev-server";
 
 const handler: HattipHandler = (context) => {
   const { pathname } = new URL(context.request.url);
@@ -14,6 +15,12 @@ const handler: HattipHandler = (context) => {
   }
 };
 
-const app = createMiddleware(handler);
-
-export default app;
+if (httpDevServer) {
+  console.log("DEV SERVER");
+  httpDevServer.on("request", createMiddleware(handler));
+} else {
+  console.log("PROD SERVER");
+  createServer(handler).listen(3000, "localhost", () => {
+    console.log("Server listening on http://localhost:3000");
+  });
+}

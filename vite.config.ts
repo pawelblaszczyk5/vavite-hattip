@@ -6,7 +6,8 @@ import vavite from "vavite";
 export default defineConfig({
   plugins: [
     vavite({
-      handlerEntry: "src/server.ts",
+      serverEntry: "src/server.ts",
+      standalone: true,
     }),
   ],
 });
